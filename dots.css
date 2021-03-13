@@ -1,0 +1,36 @@
+.line{
+    text-align:left;
+    margin-left:0;
+}
+.white{
+    color: white;
+}
+.red{
+    color: red;
+}
+.blue{
+    color: blue;
+}
+.vertical-line{
+    transform: rotate(90deg);
+    width: 40px;
+}
+.horizontal-line{
+    width: 40px;
+}
+td{
+    padding: 1px;
+}
+.box{
+    height: 40px;
+    width: 40px;
+}
+.white-background{
+    background-color: white;
+}
+.red-background{
+    background-color: red;
+}
+.blue-background{
+    background-color: blue;
+}
