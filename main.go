@@ -117,9 +117,9 @@ func gameOver(squares *[][]string) string {
 		for j := 0; j < len((*squares)[i]); j++ {
 			if (*squares)[i][j] == "white-background" {
 				return ""
-			} else if (*squares)[i][j] == "red-background" {
-				points += 1
 			} else if (*squares)[i][j] == "blue-background" {
+				points += 1
+			} else if (*squares)[i][j] == "red-background" {
 				points -= 1
 			}
 		}
@@ -198,7 +198,7 @@ func opponentsTurn(board *Board) string {
 	valid := true
 	for !valid || (myTurn && gameOver == "") {
 		move := makeMove((*board).Lines)
-		valid, gameOver, myTurn = moveHandler(move, board, "blue")
+		valid, gameOver, myTurn = moveHandler(move, board, "red")
 	}
 	return gameOver
 }
@@ -224,7 +224,7 @@ func main() {
 		var structuredBody ClientRequest
 
 		json.Unmarshal([]byte(body), &structuredBody)
-		gameOver := playPlayersTurn(structuredBody.Move, &structuredBody.Game, "red")
+		gameOver := playPlayersTurn(structuredBody.Move, &structuredBody.Game, "blue")
 		var responseObject ServerResponse = ServerResponse{structuredBody.Game, gameOver}
 		response, _ := json.Marshal(&responseObject)
 		fmt.Fprintf(w, string(response))

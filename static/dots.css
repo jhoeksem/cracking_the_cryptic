@@ -1,11 +1,38 @@
+
+body{
+    background-color: #272b30;
+}
+.center{
+    display: flex;
+    justify-content: center;
+}
+
+h1{
+    color: white;
+}
+input{
+    color: #e9ecef;
+    background-color: #3a3f44;
+}
+
+input:hover{
+    background-color: #7a8288;
+}
+
+.dot{
+    margin:  15px;
+    background-color: #272b30;
+    color: #272b30;
+}
+
 .line{
     text-align:left;
     margin-left:0;
 }
 .white{
-    color: white;
-    background-color: white;
-    border-color: white;
+    color: #272b30;
+    background-color: #272b30;
+    border-color: #272b30;
 }
 .red{
     color: red;
@@ -31,12 +58,14 @@ td{
     height: 40px;
     width: 40px;
 }
-.white-background{
-    background-color: white;
-}
+
 .red-background{
     background-color: red;
 }
 .blue-background{
     background-color: blue;
+}
+#wait-message{
+    margin: 10px;
+    color: #e9ecef;
 }

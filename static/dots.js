@@ -2,20 +2,33 @@
 
 var previousClick = [-1, -1];
 var dimensions = [4,4];
-var lines =new Array(dimensions[0]*2 -1);
-for (var i = 0; i < dimensions[0]*2 -1; i++){
-    lines[i] = new Array(dimensions[1] - (1+i)%2);
-    lines[i].fill("white");
-}
+var lines;
 
-var squares = new Array(dimensions[0] - 1);
-for (var i = 0; i < dimensions[0] - 1; i++){
-    squares[i] = new Array(dimensions[1] - 1);
-    squares[i].fill("white-background");
-}
+var squares;
+initializeBoard();
 
 createTable();
+function initializeBoard(){
+    lines =new Array(dimensions[0]*2 -1);
+    for (var i = 0; i < dimensions[0]*2 -1; i++){
+        lines[i] = new Array(dimensions[1] - (1+i)%2);
+        lines[i].fill("white");
+    }
 
+    squares = new Array(dimensions[0] - 1);
+    for (var i = 0; i < dimensions[0] - 1; i++){
+        squares[i] = new Array(dimensions[1] - 1);
+        squares[i].fill("white-background");
+    }
+}
+function reset(){
+    initializeBoard();
+    if (previousClick[0] !==-1){
+        resetButton(previousClick[0], previousClick[1]);
+    }
+    document.getElementById("wait-message").innerHTML="";
+    createTable();
+}
 function createTable(){
     var table = document.getElementById("game-board");
     var tableStructure = "";
@@ -26,7 +39,7 @@ function createTable(){
         if (i%2 ==0){
             for(var j =0; j < dimensions[1]; j++){
                 var position = buttonColumn+"-"+j
-                tableStructure += "<td><input type=\"radio\" id=\""+position+"\" onClick=\"radioButtonHandler("+buttonColumn+", "+j+")\"></td>";
+                tableStructure += "<td><input type=\"radio\" id=\""+position+"\" class=\"dot\" onClick=\"radioButtonHandler("+buttonColumn+", "+j+")\"></td>";
                 if(j < dimensions[1] - 1){
                     tableStructure += "<td><hr class=\"line horizontal-line "+lines[i][j]+"\"></td>";
                 }
@@ -45,7 +58,18 @@ function createTable(){
     table.innerHTML = tableStructure;
 }
 
+function setButtons(value){
+    for (var i =0; i < dimensions[0]; i++){
+        for (var j =0; j<dimensions[1]; j++){
+            document.getElementById(i+"-"+j).disabled = value;
+        }
+    }
+}
+
 async function sendRequest(x, y){
+    var wait = document.getElementById("wait-message");
+    wait.innerHTML = "Waiting for server to make their move.";
+    setButtons(true);
     var move = [x, y];
     var data = {"Move": move, "Game": {"Squares": squares, "Lines": lines}};
     var temp = await fetch("/updateTurn", {
@@ -58,6 +82,8 @@ async function sendRequest(x, y){
       var object = JSON.parse(text);
       lines = object.Game.Lines;
       squares = object.Game.Squares;
+      wait.innerHTML = "";
+      setButtons(false);
       return object.GameOver;
 }
 
@@ -116,7 +142,7 @@ async function radioButtonHandler(i, j){
     previousClick[1] = -1;
     createTable();
     if (gameOver !== ""){
-        alert(gameOver);
+        document.getElementById("wait-message").innerHTML = gameOver;
     }
     return;
     
