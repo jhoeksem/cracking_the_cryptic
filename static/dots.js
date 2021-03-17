@@ -2,8 +2,6 @@
 
 var previousClick = [-1, -1];
 var dimensions = [4,4];
-var turn = 0;
-var turnColor = ["red", "blue"];
 var lines =new Array(dimensions[0]*2 -1);
 for (var i = 0; i < dimensions[0]*2 -1; i++){
     lines[i] = new Array(dimensions[1] - (1+i)%2);
@@ -19,8 +17,6 @@ for (var i = 0; i < dimensions[0] - 1; i++){
 createTable();
 
 function createTable(){
-    var turnLabel = document.getElementById("turn-label");
-    turnLabel.textContent = turnColor[turn]+"'s Turn";
     var table = document.getElementById("game-board");
     var tableStructure = "";
     tableStructure += "<tbody>";
