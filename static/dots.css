@@ -4,12 +4,18 @@
 }
 .white{
     color: white;
+    background-color: white;
+    border-color: white;
 }
 .red{
     color: red;
+    background-color: red;
+    border-color: red;
 }
 .blue{
     color: blue;
+    background-color: blue;
+    border-color: blue;
 }
 .vertical-line{
     transform: rotate(90deg);
