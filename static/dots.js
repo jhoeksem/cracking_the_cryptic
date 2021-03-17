@@ -1,4 +1,5 @@
 "use strict";
+
 var previousClick = [-1, -1];
 var dimensions = [4,4];
 var turn = 0;
@@ -15,8 +16,6 @@ for (var i = 0; i < dimensions[0] - 1; i++){
     squares[i].fill("white-background");
 }
 
-var points = [0, 0];
-var TOTAL_POINTS = (dimensions[0] -1) * (dimensions[1] -1);
 createTable();
 
 function createTable(){
@@ -50,6 +49,22 @@ function createTable(){
     table.innerHTML = tableStructure;
 }
 
+async function sendRequest(x, y){
+    var move = [x, y];
+    var data = {"Move": move, "Game": {"Squares": squares, "Lines": lines}};
+    var temp = await fetch("/updateTurn", {
+        method: "POST", 
+        body: JSON.stringify(data)
+      }).then(res => {
+          return res;
+      });
+      var text = await temp.text();
+      var object = JSON.parse(text);
+      lines = object.Game.Lines;
+      squares = object.Game.Squares;
+      return object.GameOver;
+}
+
 function resetButton(i, j){
     var previousButton = document.getElementById(i+"-"+j);
     if(previousButton !== null){
@@ -57,66 +72,7 @@ function resetButton(i, j){
     }
 }
 
-function gameOverHandler(){
-    if (points[0] + points[1] === TOTAL_POINTS){
-        if(points[0]> points[1]){
-            alert(turnColor[0]+" Won");
-        } else if (points[9] < points){
-            alert(turnColor[1]+" Won");
-        } else{
-            alert("Tie Game");
-        }
-    }
-}
-
-function checkSquares(x, y){
-    if(lines[x][y] === "white"){
-        console.log("Error somehow checking a line that was not selected");
-        return;
-    }
-    var squareFilled = false;
-    if (x % 2 ==0){
-        if (x - 2 >= 0 && lines[x-2][y] !== "white"){
-            if (lines[x-1][y] !== "white" && lines[x-1][y+1]!== "white"){
-                var squareColumn = Math.floor(x/2) - 1;
-                squares[squareColumn][y] = turnColor[turn]+"-background";
-                squareFilled = true;
-                points[turn] ++;
-            }
-        }
-        if (x + 2 < 2 * dimensions[0] && lines[x+2][y] !== "white"){
-            if (lines[x+1][y] !== "white" && lines[x+1][y+1]!== "white"){
-                squares[Math.floor(x/2)][y] = turnColor[turn]+"-background";
-                squareFilled = true;
-                points[turn] ++;
-            }
-        }
-    } else{
-        if (y - 1 >= 0 && lines[x][y-1] !== "white"){
-            if (lines[x+1][y-1] !== "white" && lines[x-1][y-1]!== "white"){
-                squares[Math.floor(x/2)][y-1] = turnColor[turn]+"-background";
-                squareFilled = true;
-                points[turn] ++;
-            }
-        }
-        if (y + 1 < dimensions[1] && lines[x][y+1] !== "white"){
-            if (lines[x+1][y] !== "white" && lines[x-1][y]!== "white"){
-                squares[Math.floor(x/2)][y] = turnColor[turn]+"-background";
-                squareFilled = true;
-                points[turn] ++;
-            }
-        }
-
-    }
-    if(!squareFilled){
-        turn = (1 + turn) % 2;
-    }
-
-    gameOverHandler();
-}
-
-function radioButtonHandler(i, j){
-    var validMove = false;
+async function radioButtonHandler(i, j){
     var insertedX = -1;
     var insertedY = -1;
     if (previousClick[0] < 0 ){
@@ -124,19 +80,20 @@ function radioButtonHandler(i, j){
         previousClick[1] = j;
         return;
     }
+    var gameOver = "";
     if (previousClick[0] == i){
         if (j - previousClick[1] === 1){
             if (lines[2*i][previousClick[1]] === "white"){
                 insertedX = 2*i;
                 insertedY = previousClick[1];
-                lines[insertedX][insertedY] = turnColor[turn];
+                gameOver = await sendRequest(insertedX, insertedY);
             }
         }
         else if (j - previousClick[1] === -1){
             if (lines[2*i][j] === "white"){
                 insertedX = 2*i;
                 insertedY = j;
-                lines[insertedX][insertedY] = turnColor[turn];
+                gameOver = await sendRequest(insertedX, insertedY);
             }
         }
     }
@@ -145,14 +102,14 @@ function radioButtonHandler(i, j){
             if(lines[1 + 2 * previousClick[0]][j] === "white"){
                 insertedX = 1 + 2 * previousClick[0];
                 insertedY = j;
-                lines[insertedX][insertedY] = turnColor[turn];
+                gameOver = await sendRequest(insertedX, insertedY);
             }
         }
         else if (i - previousClick[0] === -1){
             if(lines[1 + 2 * i][j] === "white"){
                 insertedX = 1 + 2 * i;
                 insertedY = j;
-                lines[insertedX][insertedY] = turnColor[turn];
+                gameOver = await sendRequest(insertedX, insertedY);
             }
 
         }
@@ -161,10 +118,10 @@ function radioButtonHandler(i, j){
     resetButton(i, j);
     previousClick[0] = -1;
     previousClick[1] = -1;
-    if (insertedX >= 0){
-        checkSquares(insertedX, insertedY);
-    }
     createTable();
+    if (gameOver !== ""){
+        alert(gameOver);
+    }
     return;
     
 }
