@@ -3,6 +3,21 @@
 var previousClick = [-1, -1];
 var dimensions = [4,4];
 var lines;
+var innerText = "";
+for (var i = 2; i <=8; i++){
+    var selected = i ==4? ' selected' : '';
+    innerText += "<option value=\""+i+"\""+selected+">"+i+" Rows</option>";
+}
+var element = document.getElementById("rows");
+element.innerHTML = innerText;
+innerText = "";
+for (var i = 2; i <=8; i++){
+    var selected = i ==4? ' selected' : '';
+    innerText += "<option value=\""+i+"\""+selected+">"+i+" Columns</option>";
+}
+element = document.getElementById("columns");
+console.log(element);
+element.innerHTML = innerText;
 
 var squares;
 initializeBoard();
@@ -22,6 +37,21 @@ function initializeBoard(){
     }
 }
 function reset(){
+    var rows = document.getElementById("rows").value;
+    var columns = document.getElementById("columns").value;
+    if(isNaN(rows)){
+        rows = 4;
+    } else if (rows <2 || rows >8){
+        rows = 4;
+    }
+    if(isNaN(columns)){
+        columns = 4;
+    } else if (columns <2 || columns >8){
+        columns = 4;
+    }
+    dimensions[0] = rows;
+    dimensions[1] = columns;
+
     initializeBoard();
     if (previousClick[0] !==-1){
         resetButton(previousClick[0], previousClick[1]);
@@ -143,6 +173,7 @@ async function radioButtonHandler(i, j){
     createTable();
     if (gameOver !== ""){
         document.getElementById("wait-message").innerHTML = gameOver;
+        setButtons(true);
     }
     return;
     

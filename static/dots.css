@@ -69,3 +69,9 @@ td{
     margin: 10px;
     color: #e9ecef;
 }
+
+select{
+    margin:15px;
+    background-color: #3a3f44;
+    color:#e9ecef;
+}
