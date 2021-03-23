@@ -234,3 +234,5 @@ func main() {
 		log.Fatal(err)
 	}
 }
+
+// send back empty board if game corrupted. set game over to somethig send back empty board h=
