@@ -6,6 +6,7 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+	"math/rand"
 )
 
 type Board struct {
@@ -133,6 +134,21 @@ func gameOver(squares *[][]string) string {
 	}
 }
 
+// returns game score, helpful for AI
+func evaluation(squares *[][]string) int {
+	points := 0
+	for i := 0; i < len(*squares); i++ {
+		for j := 0; j < len((*squares)[i]); j++ {
+			if (*squares)[i][j] == "blue-background" {
+				points += 1
+			} else if (*squares)[i][j] == "red-background" {
+				points -= 1
+			}
+		}
+	}
+	return points
+}
+
 // Tries a move and if it is valid it will add the move to the board
 // Move is relative to the lines on the board not dots
 // First return is if it was a valid move
@@ -175,19 +191,138 @@ func moveHandler(move []int, board *Board, color string) (bool, string, bool) {
 	return true, "", false
 }
 
-// Dummy func to choose the first unused line for opponent
-// Replace this with min max
-func makeMove(lines [][]string) []int {
-	result := make([]int, 2)
-	for i := 0; i < len(lines); i++ {
-		for j := 0; j < len(lines[i]); j++ {
-			if lines[i][j] == "white" {
-				result[0] = i
-				result[1] = j
-				return result
+func getLegalMoves(board Board) [][]int {
+
+	moveCount := 0
+	legalMoves := make([][]int, 25)
+	for i := range legalMoves {
+		legalMoves[i] = make([]int, 2)
+		legalMoves[i][0] = -1
+		legalMoves[i][1] = -1
+	}
+	for i := 0; i < len(board.Lines); i++ {
+		for j := 0; j < len(board.Lines[i]); j++ {
+			if board.Lines[i][j] == "white" {
+				legalMoves[moveCount][0] = i
+				legalMoves[moveCount][1] = j
+				moveCount += 1
 			}
 		}
 	}
+
+	return legalMoves
+}
+
+func deepCopy(board Board) Board {
+	new_board := board
+
+	new_board.Lines = make([][]string, len(board.Lines))
+	for i := range board.Lines {
+		new_board.Lines[i] = make([]string, len(board.Lines[i]))
+		copy(new_board.Lines[i], board.Lines[i])
+	}
+	new_board.Squares = make([][]string, len(board.Squares))
+	for i := range board.Squares {
+		new_board.Squares[i] = make([]string, len(board.Squares[i]))
+		copy(new_board.Squares[i], board.Squares[i])
+	}
+
+	return new_board
+}
+
+// simple AI min max
+func makeMove(board Board) []int {
+
+	//depth := 1
+	result := make([]int, 2)
+	scores := make([]int, 25)
+	for i := 0; i < 25; i++ {
+		scores[i] = 1000
+	}
+	legalMoves := getLegalMoves(board)
+
+	myTurn := true
+	gameOver := ""
+	valid := true
+
+	for i, j := range legalMoves {
+		if j[0] != -1 {
+			////////////////////////////////////
+			// make legal move
+			////////////////////////////////////
+			fmt.Println("")
+			fmt.Println("")
+			fmt.Println("")
+			fmt.Println("legal move:")
+			fmt.Println(i, j)
+
+			exploration_board := deepCopy(board)
+
+			valid, gameOver, myTurn = moveHandler(j, &exploration_board, "red")
+			fmt.Println("new board:")
+			fmt.Println(exploration_board)
+			fmt.Println(valid, gameOver, myTurn)
+
+			////////////////////////////////////
+			// explore all possible responses
+			////////////////////////////////////
+			scoresAfterMove := make([]int, 25)
+			for i := 0; i < 25; i++ {
+				scoresAfterMove[i] = -1000
+			}
+			playerLegalMoves := getLegalMoves(exploration_board)
+
+			for m, n := range playerLegalMoves {
+				if n[0] != -1 {
+					fmt.Println("legal player move:")
+					fmt.Println(m, n)
+
+					next_exploration_board := deepCopy(exploration_board)
+
+					valid, gameOver, myTurn = moveHandler(n, &next_exploration_board, "blue")
+					fmt.Println("new new board:")
+					fmt.Println(next_exploration_board)
+					fmt.Println(valid, gameOver, myTurn)
+
+					move_sequence_score := evaluation(&(next_exploration_board).Squares)
+
+					scoresAfterMove[m] = move_sequence_score
+				}
+			}
+
+			// finding maximum player score
+			// and assigning score to move in scores array
+			max_player_score := -1000
+			for i := range scoresAfterMove {
+				if scoresAfterMove[i] > max_player_score {
+					max_player_score = scoresAfterMove[i]
+				}
+			}
+			scores[i] = max_player_score
+			fmt.Println("max player score")
+			fmt.Println(max_player_score)
+		}
+
+	}
+	fmt.Println(scores)
+	// finding minimum value (server wants low scores)
+	min_server_score := 1000
+	for i := range scores {
+		if scores[i] < min_server_score {
+			min_server_score = scores[i]
+		}
+	}
+	fmt.Println(min_server_score)
+
+	// select random move with lowest minimum value
+	index := rand.Intn(len(legalMoves))
+	for scores[index] != min_server_score {
+		index = rand.Intn(len(legalMoves))
+	}
+
+	result = legalMoves[index]
+	return result
+
 	panic("No valid moves should not be here")
 }
 
@@ -197,7 +332,7 @@ func opponentsTurn(board *Board) string {
 	gameOver := ""
 	valid := true
 	for !valid || (myTurn && gameOver == "") {
-		move := makeMove((*board).Lines)
+		move := makeMove(*board)
 		valid, gameOver, myTurn = moveHandler(move, board, "red")
 	}
 	return gameOver
