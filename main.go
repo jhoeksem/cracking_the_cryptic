@@ -368,7 +368,7 @@ func  errorCheckBoard(board *Board){
 
 func main() {
 	http.Handle("/", http.FileServer(http.Dir("./static")))
-	http.HandleFunc("/updateTurn", func(w http.ResponseWriter, r *http.Request) {
+	http.HandleFunc("/updateTurn", func(w http.ResponseWriter, r *http.Request){
 
 		body, err := ioutil.ReadAll(r.Body)
 		if err != nil {
@@ -377,17 +377,16 @@ func main() {
 		var structuredBody ClientRequest
 
 		json.Unmarshal([]byte(body), &structuredBody)
-		errorCheckBoard(&structuredBody.Game);
+		errorCheckBoard(&structuredBody.Game)
 
 		// Once have access to the board check its dimensions
-		defer HandleFunc(){
-			if r := recover() r!= nil {
+		defer HandleFunc() {
+			if r := recover(); r!= nil {
 				gameOver = "error"
 				var responseObject ServerResponse = ServerResponse{structuredBody.Game, gameOver}
-				response, _ := json.Marshal(&responseObject)
-				fmt.Fprintf(w, string(response))
+				response, _ := json.Marshal(&responseObject);
+				fmt.Fprintf(w, string(response));
 			}
-
 		}()
 		gameOver := playPlayersTurn(structuredBody.Move, &structuredBody.Game, "blue")
 		var responseObject ServerResponse = ServerResponse{structuredBody.Game, gameOver}
