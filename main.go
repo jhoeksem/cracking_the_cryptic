@@ -350,14 +350,14 @@ func playPlayersTurn(move []int, board *Board, color string) string {
 }
 
 func  errorCheckBoard(board *Board){
-	firstRowLen = len((*board).squares[0])
+	firstRowLen := len((*board).Squares[0])
 	// for all of the rows go through and make sure that every other row is one more than the previous. Using odd and even indexes 
-	for i:= range len((*board).squares) {
-		if i % 2  && len( (*board).squares[i]) != firstRowLen + 1 {
-			fmt.PrintLn("Board dimensions are off")
+	for i:=0; i<= len((*board).Squares); i++ {
+		if ((i % 2 == 1)  && (len((*board).Squares[i]) != firstRowLen + 1)) {
+			fmt.Println("Board dimensions are off")
 			panic("Board dimensions are off")
-		}else if i % 2 == 0 && len((*board).squares[i] != firstRowlen) {
-			fmt.PrintLn("Board dimensions are off")
+		}else if (i % 2 == 0 && len((*board).Squares[i]) != firstRowLen) {
+			fmt.Println("Board dimensions are off")
 			panic("Board dimensions are off")
 
 		}
@@ -380,9 +380,9 @@ func main() {
 		errorCheckBoard(&structuredBody.Game)
 
 		// Once have access to the board check its dimensions
-		defer HandleFunc() {
+		defer func() {
 			if r := recover(); r!= nil {
-				gameOver = "error"
+				gameOver := "error"
 				var responseObject ServerResponse = ServerResponse{structuredBody.Game, gameOver}
 				response, _ := json.Marshal(&responseObject);
 				fmt.Fprintf(w, string(response));
