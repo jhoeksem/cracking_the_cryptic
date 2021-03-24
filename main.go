@@ -349,9 +349,27 @@ func playPlayersTurn(move []int, board *Board, color string) string {
 	return gameOver
 }
 
+func  errorCheckBoard(board *Board){
+	firstRowLen = len((*board).squares[0])
+	// for all of the rows go through and make sure that every other row is one more than the previous. Using odd and even indexes 
+	for i:= range len((*board).squares) {
+		if i % 2  && len( (*board).squares[i]) != firstRowLen + 1 {
+			fmt.PrintLn("Board dimensions are off")
+			panic("Board dimensions are off")
+		}else if i % 2 == 0 && len((*board).squares[i] != firstRowlen) {
+			fmt.PrintLn("Board dimensions are off")
+			panic("Board dimensions are off")
+
+		}
+
+	}
+
+}
+
 func main() {
 	http.Handle("/", http.FileServer(http.Dir("./static")))
 	http.HandleFunc("/updateTurn", func(w http.ResponseWriter, r *http.Request) {
+
 		body, err := ioutil.ReadAll(r.Body)
 		if err != nil {
 			log.Fatal((err))
@@ -359,6 +377,18 @@ func main() {
 		var structuredBody ClientRequest
 
 		json.Unmarshal([]byte(body), &structuredBody)
+		errorCheckBoard(&structuredBody.Game);
+
+		// Once have access to the board check its dimensions
+		defer HandleFunc(){
+			if r := recover() r!= nil {
+				gameOver = "error"
+				var responseObject ServerResponse = ServerResponse{structuredBody.Game, gameOver}
+				response, _ := json.Marshal(&responseObject)
+				fmt.Fprintf(w, string(response))
+			}
+
+		}()
 		gameOver := playPlayersTurn(structuredBody.Move, &structuredBody.Game, "blue")
 		var responseObject ServerResponse = ServerResponse{structuredBody.Game, gameOver}
 		response, _ := json.Marshal(&responseObject)
