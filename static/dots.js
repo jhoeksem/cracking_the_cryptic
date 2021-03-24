@@ -141,8 +141,13 @@ async function radioButtonHandler(i, j){
     previousClick[0] = -1;
     previousClick[1] = -1;
     createTable();
-    if (gameOver !== ""){
+// if gameOver == corrupted print this game didn't work. 
+    if (gameOver == "error"){
         document.getElementById("wait-message").innerHTML = gameOver;
+	return "";
+    }else if(gameOver !== ""){
+        document.getElementById("wait-message").innerHTML = gameOver;
+
     }
     return;
     
