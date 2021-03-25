@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"io/ioutil"
 	"log"
-	"net/http"
 	"math/rand"
+	"net/http"
 )
 
 type Board struct {
@@ -349,34 +349,34 @@ func playPlayersTurn(move []int, board *Board, color string) string {
 	return gameOver
 }
 
-func  errorCheckBoard(board *Board){
+func errorCheckBoard(board *Board) {
 	firstRowLen := len((*board).Lines[0])
 	// for all of the rows go through and make sure that every other row is one more than the previous. Using odd and even indexes if something goes wrong the defer function should be ran
-	for i:=0; i<= len((*board).Lines); i++ {
-		if ((i % 2 == 1)  && (len((*board).Lines[i]) != firstRowLen + 1)) {
+	for i := 0; i < len((*board).Lines); i++ {
+		if (i%2 == 1) && (len((*board).Lines[i]) != firstRowLen+1) {
 			fmt.Println("Board dimensions are off")
 			panic("Board dimensions are off")
-		}else if (i % 2 == 0 && len((*board).Lines[i]) != firstRowLen) {
+		} else if i%2 == 0 && len((*board).Lines[i]) != firstRowLen {
 			fmt.Println("Board dimensions are off")
 			panic("Board dimensions are off")
 
 		}
 
 	}
-
 }
 
 func main() {
 	http.Handle("/", http.FileServer(http.Dir("./static")))
-	http.HandleFunc("/updateTurn", func(w http.ResponseWriter, r *http.Request){
+	http.HandleFunc("/updateTurn", func(w http.ResponseWriter, r *http.Request) {
 
-	defer func() {
-			if r := recover(); r!= nil {
+		defer func() {
+			if r := recover(); r != nil {
+				fmt.Println(r)
 				gameOver := "error"
-				var board Board;
+				var board Board
 				var responseObject ServerResponse = ServerResponse{board, gameOver}
-				response, _ := json.Marshal(&responseObject);
-				fmt.Fprintf(w, string(response));
+				response, _ := json.Marshal(&responseObject)
+				fmt.Fprintf(w, string(response))
 			}
 		}()
 
@@ -388,9 +388,8 @@ func main() {
 
 		json.Unmarshal([]byte(body), &structuredBody)
 
-		// Once have access to the board check its dimensions if something goes wrong the defer function will run 
+		// Once have access to the board check its dimensions if something goes wrong the defer function will run
 		errorCheckBoard(&structuredBody.Game)
-
 
 		gameOver := playPlayersTurn(structuredBody.Move, &structuredBody.Game, "blue")
 		var responseObject ServerResponse = ServerResponse{structuredBody.Game, gameOver}
