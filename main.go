@@ -194,7 +194,7 @@ func moveHandler(move []int, board *Board, color string) (bool, string, bool) {
 func getLegalMoves(board Board) [][]int {
 
 	moveCount := 0
-	legalMoves := make([][]int, 25)
+	legalMoves := make([][]int, 1000)
 	for i := range legalMoves {
 		legalMoves[i] = make([]int, 2)
 		legalMoves[i][0] = -1
@@ -211,6 +211,28 @@ func getLegalMoves(board Board) [][]int {
 	}
 
 	return legalMoves
+}
+
+// original legal moves array has length 1000 with lots of placeholder values
+// this function trims off the placeholders
+func trim_moves(moves_untrimmed [][]int) [][]int {
+
+	// count number of real moves
+	num_real_moves := 0
+	for i := range moves_untrimmed {
+		if moves_untrimmed[i][0] > -1 {
+			num_real_moves += 1
+		}
+	}
+
+	// copy real moves into new move array
+	moves_trimmed := make([][]int, num_real_moves)
+	for i := 0; i < num_real_moves; i++ {
+		moves_trimmed[i] = moves_untrimmed[i]
+	}
+
+	return moves_trimmed
+
 }
 
 func deepCopy(board Board) Board {
@@ -230,6 +252,47 @@ func deepCopy(board Board) Board {
 	return new_board
 }
 
+func return_min(scores []int) int {
+	min_score := 1000
+	for i := range scores {
+		if scores[i] < min_score {
+			min_score = scores[i]
+		}
+	}
+	return min_score
+}
+
+func return_max(scores []int) int {
+	max_score := -1000
+	for i := range scores {
+		if scores[i] > max_score {
+			max_score = scores[i]
+		}
+	}
+	return max_score
+}
+
+/*
+func score_move(board Board, move []int) int {
+
+	// base case
+	if 
+
+	// get legal moves and # legal moves
+	legalMoves := getLegalMoves(board)
+	legalMoves = trim_moves()
+	numLegalMoves := len(legalMoves)
+
+	myTurn := true
+	gameOver := ""
+	valid := true
+
+	for i, j := range legalMoves {
+
+	}
+}
+*/
+
 // simple AI min max
 func makeMove(board Board) []int {
 
@@ -240,6 +303,7 @@ func makeMove(board Board) []int {
 		scores[i] = 1000
 	}
 	legalMoves := getLegalMoves(board)
+	legalMoves = trim_moves(legalMoves)
 
 	myTurn := true
 	gameOver := ""
@@ -292,12 +356,7 @@ func makeMove(board Board) []int {
 
 			// finding maximum player score
 			// and assigning score to move in scores array
-			max_player_score := -1000
-			for i := range scoresAfterMove {
-				if scoresAfterMove[i] > max_player_score {
-					max_player_score = scoresAfterMove[i]
-				}
-			}
+			max_player_score := return_max(scoresAfterMove)
 			scores[i] = max_player_score
 			fmt.Println("max player score")
 			fmt.Println(max_player_score)
@@ -306,12 +365,7 @@ func makeMove(board Board) []int {
 	}
 	fmt.Println(scores)
 	// finding minimum value (server wants low scores)
-	min_server_score := 1000
-	for i := range scores {
-		if scores[i] < min_server_score {
-			min_server_score = scores[i]
-		}
-	}
+	min_server_score := return_min(scores)
 	fmt.Println(min_server_score)
 
 	// select random move with lowest minimum value
