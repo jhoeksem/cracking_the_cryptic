@@ -69,7 +69,7 @@ function createTable(){
         if (i%2 ==0){
             for(var j =0; j < dimensions[1]; j++){
                 var position = buttonColumn+"-"+j
-                tableStructure += "<td><input type=\"radio\" id=\""+position+"\" class=\"dot\" onClick=\"radioButtonHandler("+buttonColumn+", "+j+")\"></td>";
+                tableStructure += "<td><input type=\"button\" id=\""+position+"\" class=\"dot\" onClick=\"radioButtonHandler("+buttonColumn+", "+j+")\"></td>";
                 if(j < dimensions[1] - 1){
                     tableStructure += "<td><hr class=\"line horizontal-line "+lines[i][j]+"\"></td>";
                 }

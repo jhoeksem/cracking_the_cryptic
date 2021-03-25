@@ -12,17 +12,17 @@ h1{
 }
 input{
     color: #e9ecef;
-    background-color: #3a3f44;
+    background-color: #3a3f44; 
 }
 
 input:hover{
     background-color: #7a8288;
 }
-
 .dot{
     margin:  15px;
-    background-color: #272b30;
-    color: #272b30;
+    background-color: #3a3f44;
+    color: #FFFFFF;
+    border-radius: 100%;
 }
 
 .line{
