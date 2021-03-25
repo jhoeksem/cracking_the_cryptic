@@ -194,7 +194,7 @@ func moveHandler(move []int, board *Board, color string) (bool, string, bool) {
 func getLegalMoves(board Board) [][]int {
 
 	moveCount := 0
-	legalMoves := make([][]int, 25)
+	legalMoves := make([][]int, 1000)
 	for i := range legalMoves {
 		legalMoves[i] = make([]int, 2)
 		legalMoves[i][0] = -1
@@ -211,6 +211,28 @@ func getLegalMoves(board Board) [][]int {
 	}
 
 	return legalMoves
+}
+
+// original legal moves array has length 1000 with lots of placeholder values
+// this function trims off the placeholders
+func trim_moves(moves_untrimmed [][]int) [][]int {
+
+	// count number of real moves
+	num_real_moves := 0
+	for i := range moves_untrimmed {
+		if moves_untrimmed[i][0] > -1 {
+			num_real_moves += 1
+		}
+	}
+
+	// copy real moves into new move array
+	moves_trimmed := make([][]int, num_real_moves)
+	for i := 0; i < num_real_moves; i++ {
+		moves_trimmed[i] = moves_untrimmed[i]
+	}
+
+	return moves_trimmed
+
 }
 
 func deepCopy(board Board) Board {
@@ -230,6 +252,15 @@ func deepCopy(board Board) Board {
 	return new_board
 }
 
+/*
+func score_move() int {
+
+	// get legal moves and # legal moves
+	legalMoves := getLegalMoves(board)
+
+
+}
+*/
 // simple AI min max
 func makeMove(board Board) []int {
 
@@ -240,6 +271,9 @@ func makeMove(board Board) []int {
 		scores[i] = 1000
 	}
 	legalMoves := getLegalMoves(board)
+	fmt.Println("legal moves untrimmed: ", legalMoves)
+	legalMoves = trim_moves(legalMoves)
+	fmt.Println("legal moves trimmed: ", legalMoves)
 
 	myTurn := true
 	gameOver := ""
