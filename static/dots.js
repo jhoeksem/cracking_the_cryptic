@@ -51,30 +51,22 @@ function checkSquares(x, y){
             if (lines[x-1][y] !== "white" && lines[x-1][y+1]!== "white"){
                 var squareColumn = Math.floor(x/2) - 1;
                 squares[squareColumn][y] = "blue-background";
-                squareFilled = true;
-                points[turn] ++;
             }
         }
         if (x + 2 < 2 * dimensions[0] && lines[x+2][y] !== "white"){
             if (lines[x+1][y] !== "white" && lines[x+1][y+1]!== "white"){
                 squares[Math.floor(x/2)][y] = "blue-background";
-                squareFilled = true;
-                points[turn] ++;
             }
         }
     } else{
         if (y - 1 >= 0 && lines[x][y-1] !== "white"){
             if (lines[x+1][y-1] !== "white" && lines[x-1][y-1]!== "white"){
                 squares[Math.floor(x/2)][y-1] = "blue-background";
-                squareFilled = true;
-                points[turn] ++;
             }
         }
         if (y + 1 < dimensions[1] && lines[x][y+1] !== "white"){
             if (lines[x+1][y] !== "white" && lines[x-1][y]!== "white"){
                 squares[Math.floor(x/2)][y] = "blue-background";
-                squareFilled = true;
-                points[turn] ++;
             }
         }
 
@@ -146,6 +138,7 @@ async function sendRequest(x, y){
     wait.innerHTML = "Waiting for server to make their move.";
     setButtons(true);
     var move = [x, y];
+    console.log(temp_lines);
     var data = {"Move": move, "Game": {"Squares": temp_squares, "Lines": temp_lines}};
     var temp = await fetch("/updateTurn", {
         method: "POST", 
@@ -210,8 +203,10 @@ async function radioButtonHandler(i, j){
 
 
     if (insertedX !== -1){
-        temp_lines = lines;
-        temp_squares = squares;
+        temp_lines = JSON.parse(JSON.stringify(lines));
+        ;
+        temp_squares = JSON.parse(JSON.stringify(squares));
+        ;
         lines[insertedX][insertedY] = "blue";
         checkSquares(insertedX, insertedY);
         createTable(); 
