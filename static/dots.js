@@ -6,14 +6,14 @@ var lines;
 var temp_lines;
 var temp_squares;
 var innerText = "";
-for (var i = 2; i <=8; i++){
+for (var i = 2; i <=6; i++){
     var selected = i ==4? ' selected' : '';
     innerText += "<option value=\""+i+"\""+selected+">"+i+" Rows</option>";
 }
 var element = document.getElementById("rows");
 element.innerHTML = innerText;
 innerText = "";
-for (var i = 2; i <=8; i++){
+for (var i = 2; i <=6; i++){
     var selected = i ==4? ' selected' : '';
     innerText += "<option value=\""+i+"\""+selected+">"+i+" Columns</option>";
 }
