@@ -194,7 +194,7 @@ func moveHandler(move []int, board *Board, color string) (bool, string, bool) {
 func getLegalMoves(board Board) [][]int {
 
 	moveCount := 0
-	legalMoves := make([][]int, 1000)
+	legalMoves := make([][]int, 200)
 	for i := range legalMoves {
 		legalMoves[i] = make([]int, 2)
 		legalMoves[i][0] = -1
@@ -292,108 +292,85 @@ func init_scores(base_value int, length int) []int {
 	}
 	return scores
 }
-/*
-func score_move(board Board, move []int, depth int, player int) int {
+
+// returns player color string based on integer value
+// player value is -1 for server, 1 for player
+func get_color(player int) string {
+	if player == 1 {
+		return "blue"
+	}
+	else if player == -1 {
+		return "red"
+	}
+	panic("get_color() not working properly! player int entered: ", player)
+}
+
+// recursive function to return the value of a given move using minmax and a given depth 
+// player value is -1 for server, 1 for player
+func scoring_worker(board Board, move_index int, scores *[]int, depth int, player int, parent_thread *sync.WaitGroup) int {
+
+	// lil debugging and thread chaos
+	defer parent_thread.Done()
+	var current_thread sync.WaitGroup
+	fmt.Println("depth: ", depth, " worker_ID: ", move_index)
 
 	// get legal moves and # legal moves
 	legalMoves := getLegalMoves(board)
 	legalMoves = trim_moves()
 	numLegalMoves := len(legalMoves)
 
+	////////////////////////////////////////
 	// base cases
+	////////////////////////////////////////
 	// 1. search depth is reached
 	// 2. there are no legal moves
 	if ( depth == 0 || numLegalMoves == 0 ){
-		return evaluation(&(board).Squares)
+		// next line almost definitely going to break
+		scores[move_index] = evaluation(&(board).Squares)
 	}
 
+	////////////////////////////////////////
 	// recursive case
+	////////////////////////////////////////
 	// search to another depth and minmax scores
 	myTurn := true
 	gameOver := ""
 	valid := true
-	scores := 
+	scores := init_scores(0, numLegalMoves)
 
-	for i, j := range legalMoves {
-		
+	// spin up thread to calculate each legal move
+	for index, move := range legalMoves {
+		// prepare current thread for child thread
+		current_thread.Add(1)
+
+		// make move
+		new_board := deepCopy(board)
+		color := get_color(player)
+		valid, gameOver, myTurn = moveHandler(move, &new_board, color)
+
+		// create child thread
+		go score_move(new_board, index, &scores, depth - 1, player * -1, &current_thread)
+	}
+	current_thread.Wait()
+
+	// minmax and return value
+	if player == 1 {
+		return 
+	}
+	else if player == -1 {
+		return 
 	}
 
 	panic("Something went wrong in score_move()")
 }
-*/
+
 // simple AI min max
 func makeMove(board Board) []int {
 
-	//depth := 1
-	result := make([]int, 2)
-	legalMoves := getLegalMoves(board)
-	legalMoves = trim_moves(legalMoves)
-	scores := init_scores(1000, len(legalMoves))
+	depth := 3
+	best_move := make([]int, 2)
 
-	myTurn := true
-	gameOver := ""
-	valid := true
-
-	for i, j := range legalMoves {
-		if j[0] != -1 {
-			////////////////////////////////////
-			// make legal move
-			////////////////////////////////////
-			fmt.Println("")
-			fmt.Println("")
-			fmt.Println("")
-			fmt.Println("legal move:")
-			fmt.Println(i, j)
-
-			exploration_board := deepCopy(board)
-
-			valid, gameOver, myTurn = moveHandler(j, &exploration_board, "red")
-			fmt.Println("new board:")
-			fmt.Println(exploration_board)
-			fmt.Println(valid, gameOver, myTurn)
-
-			////////////////////////////////////
-			// explore all possible responses
-			////////////////////////////////////
-			scoresAfterMove := init_scores(-1000, 1000)
-			playerLegalMoves := getLegalMoves(exploration_board)
-
-			for m, n := range playerLegalMoves {
-				if n[0] != -1 {
-					fmt.Println("legal player move:")
-					fmt.Println(m, n)
-
-					next_exploration_board := deepCopy(exploration_board)
-
-					valid, gameOver, myTurn = moveHandler(n, &next_exploration_board, "blue")
-					fmt.Println("new new board:")
-					fmt.Println(next_exploration_board)
-					fmt.Println(valid, gameOver, myTurn)
-
-					move_sequence_score := evaluation(&(next_exploration_board).Squares)
-
-					scoresAfterMove[m] = move_sequence_score
-				}
-			}
-
-			// finding maximum player score
-			// and assigning score to move in scores array
-			max_player_score := return_max(scoresAfterMove)
-			scores[i] = max_player_score
-			fmt.Println("max player score")
-			fmt.Println(max_player_score)
-		}
-
-	}
-	fmt.Println(scores)
-	// finding minimum value (server wants low scores)
-	min_server_score := return_min(scores)
-	fmt.Println(min_server_score)
-
-	result = return_random_best_move(legalMoves, scores, min_server_score)
-	return result
-
-	//panic("No valid moves should not be here")
+	return best_move
 }
 
 //This is a function which gets a move and plays it onto the board
