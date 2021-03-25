@@ -252,15 +252,47 @@ func deepCopy(board Board) Board {
 	return new_board
 }
 
+func return_min(scores []int) int {
+	min_score := 1000
+	for i := range scores {
+		if scores[i] < min_score {
+			min_score = scores[i]
+		}
+	}
+	return min_score
+}
+
+func return_max(scores []int) int {
+	max_score := -1000
+	for i := range scores {
+		if scores[i] > max_score {
+			max_score = scores[i]
+		}
+	}
+	return max_score
+}
+
 /*
-func score_move() int {
+func score_move(board Board, move []int) int {
+
+	// base case
+	if 
 
 	// get legal moves and # legal moves
 	legalMoves := getLegalMoves(board)
+	legalMoves = trim_moves()
+	numLegalMoves := len(legalMoves)
 
+	myTurn := true
+	gameOver := ""
+	valid := true
 
+	for i, j := range legalMoves {
+
+	}
 }
 */
+
 // simple AI min max
 func makeMove(board Board) []int {
 
@@ -271,9 +303,7 @@ func makeMove(board Board) []int {
 		scores[i] = 1000
 	}
 	legalMoves := getLegalMoves(board)
-	fmt.Println("legal moves untrimmed: ", legalMoves)
 	legalMoves = trim_moves(legalMoves)
-	fmt.Println("legal moves trimmed: ", legalMoves)
 
 	myTurn := true
 	gameOver := ""
@@ -326,12 +356,7 @@ func makeMove(board Board) []int {
 
 			// finding maximum player score
 			// and assigning score to move in scores array
-			max_player_score := -1000
-			for i := range scoresAfterMove {
-				if scoresAfterMove[i] > max_player_score {
-					max_player_score = scoresAfterMove[i]
-				}
-			}
+			max_player_score := return_max(scoresAfterMove)
 			scores[i] = max_player_score
 			fmt.Println("max player score")
 			fmt.Println(max_player_score)
@@ -340,12 +365,7 @@ func makeMove(board Board) []int {
 	}
 	fmt.Println(scores)
 	// finding minimum value (server wants low scores)
-	min_server_score := 1000
-	for i := range scores {
-		if scores[i] < min_server_score {
-			min_server_score = scores[i]
-		}
-	}
+	min_server_score := return_min(scores)
 	fmt.Println(min_server_score)
 
 	// select random move with lowest minimum value
