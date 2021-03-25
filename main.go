@@ -7,6 +7,7 @@ import (
 	"log"
 	"math/rand"
 	"net/http"
+	"sync"
 )
 
 type Board struct {
@@ -299,24 +300,25 @@ func get_color(player int) string {
 	if player == 1 {
 		return "blue"
 	}
-	else if player == -1 {
+	if player == -1 {
 		return "red"
 	}
-	panic("get_color() not working properly! player int entered: ", player)
+
+	panic("get_color() not working properly!")
 }
 
 // recursive function to return the value of a given move using minmax and a given depth 
 // player value is -1 for server, 1 for player
-func scoring_worker(board Board, move_index int, scores *[]int, depth int, player int, parent_thread *sync.WaitGroup) int {
+func scoring_worker(board Board, move_index int, parent_scores *[]int, depth int, player int, parent_thread *sync.WaitGroup) {
 
 	// lil debugging and thread chaos
 	defer parent_thread.Done()
 	var current_thread sync.WaitGroup
-	fmt.Println("depth: ", depth, " worker_ID: ", move_index)
+	//fmt.Println("depth: ", depth, " worker_ID: ", move_index)
 
 	// get legal moves and # legal moves
 	legalMoves := getLegalMoves(board)
-	legalMoves = trim_moves()
+	legalMoves = trim_moves(legalMoves)
 	numLegalMoves := len(legalMoves)
 
 	////////////////////////////////////////
@@ -326,16 +328,17 @@ func scoring_worker(board Board, move_index int, scores *[]int, depth int, playe
 	// 2. there are no legal moves
 	if ( depth == 0 || numLegalMoves == 0 ){
 		// next line almost definitely going to break
-		scores[move_index] = evaluation(&(board).Squares)
+		(*parent_scores)[move_index] = evaluation(&(board).Squares)
+		return
 	}
 
 	////////////////////////////////////////
 	// recursive case
 	////////////////////////////////////////
 	// search to another depth and minmax scores
-	myTurn := true
-	gameOver := ""
-	valid := true
+	//myTurn := true
+	//gameOver := ""
+	//valid := true
 	scores := init_scores(0, numLegalMoves)
 
 	// spin up thread to calculate each legal move
@@ -346,29 +349,59 @@ func scoring_worker(board Board, move_index int, scores *[]int, depth int, playe
 		// make move
 		new_board := deepCopy(board)
 		color := get_color(player)
-		valid, gameOver, myTurn = moveHandler(move, &new_board, color)
+		moveHandler(move, &new_board, color)
 
 		// create child thread
-		go score_move(new_board, index, &scores, depth - 1, player * -1, &current_thread)
+		go scoring_worker(new_board, index, &scores, depth - 1, player * -1, &current_thread)
 	}
 	current_thread.Wait()
 
 	// minmax and return value
 	if player == 1 {
-		return 
-	}
-	else if player == -1 {
-		return 
+		(*parent_scores)[move_index] = return_max(scores)
+	} else if player == -1{
+		(*parent_scores)[move_index] = return_min(scores)
+	} else {
+		panic("player integer in scoring_worker wrong")
 	}
 
-	panic("Something went wrong in score_move()")
+	return
 }
 
 // simple AI min max
 func makeMove(board Board) []int {
 
-	depth := 3
+	// init variables
+	depth := 4
 	best_move := make([]int, 2)
+	legalMoves := getLegalMoves(board)
+	legalMoves = trim_moves(legalMoves)
+	numLegalMoves := len(legalMoves)
+	//myTurn := true
+	//gameOver := ""
+	//valid := true
+	scores := init_scores(0, numLegalMoves)
+
+	// start waitgroup
+	var wg sync.WaitGroup
+
+	// search all moves
+	for index, move := range legalMoves {
+		// prepare current thread for child thread
+		wg.Add(1)
+
+		// make move
+		new_board := deepCopy(board)
+		moveHandler(move, &new_board, "red")
+
+		// create child thread
+		go scoring_worker(new_board, index, &scores, depth - 1, 1, &wg)
+	}
+	wg.Wait()
+
+	// select move
+	min_score := return_min(scores)
+	best_move = return_random_best_move(legalMoves, scores, min_score)
 
 	return best_move
 }
