@@ -18,7 +18,6 @@ for (var i = 2; i <=8; i++){
     innerText += "<option value=\""+i+"\""+selected+">"+i+" Columns</option>";
 }
 element = document.getElementById("columns");
-console.log(element);
 element.innerHTML = innerText;
 
 var squares;
@@ -138,7 +137,6 @@ async function sendRequest(x, y){
     wait.innerHTML = "Waiting for server to make their move.";
     setButtons(true);
     var move = [x, y];
-    console.log(temp_lines);
     var data = {"Move": move, "Game": {"Squares": temp_squares, "Lines": temp_lines}};
     var temp = await fetch("/updateTurn", {
         method: "POST", 
