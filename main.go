@@ -336,7 +336,7 @@ func scoring_worker(board Board, move_index int, parent_scores *[]int, depth int
 	// recursive case
 	////////////////////////////////////////
 	// search to another depth and minmax scores
-	//myTurn := true
+	myTurn := true
 	//gameOver := ""
 	//valid := true
 	scores := init_scores(0, numLegalMoves)
@@ -349,12 +349,18 @@ func scoring_worker(board Board, move_index int, parent_scores *[]int, depth int
 		// make move
 		new_board := deepCopy(board)
 		color := get_color(player)
-		moveHandler(move, &new_board, color)
+		_, _, myTurn = moveHandler(move, &new_board, color)
 
 		// create child thread
-		go scoring_worker(new_board, index, &scores, depth - 1, player * -1, &current_thread)
+		if myTurn == true {
+			go scoring_worker(new_board, index, &scores, depth - 1, player, &current_thread)
+		} else {
+			go scoring_worker(new_board, index, &scores, depth - 1, player * -1, &current_thread)
+		}
+
 	}
 	current_thread.Wait()
+	//fmt.Println(scores)
 
 	// minmax and return value
 	if player == 1 {
@@ -372,12 +378,12 @@ func scoring_worker(board Board, move_index int, parent_scores *[]int, depth int
 func makeMove(board Board) []int {
 
 	// init variables
-	depth := 4
+	depth := 3
 	best_move := make([]int, 2)
 	legalMoves := getLegalMoves(board)
 	legalMoves = trim_moves(legalMoves)
 	numLegalMoves := len(legalMoves)
-	//myTurn := true
+	myTurn := true
 	//gameOver := ""
 	//valid := true
 	scores := init_scores(0, numLegalMoves)
@@ -390,14 +396,22 @@ func makeMove(board Board) []int {
 		// prepare current thread for child thread
 		wg.Add(1)
 
+		// dev update
+		fmt.Println("searching: ", index)
+
 		// make move
 		new_board := deepCopy(board)
-		moveHandler(move, &new_board, "red")
+		_, _, myTurn = moveHandler(move, &new_board, "red")
 
 		// create child thread
-		go scoring_worker(new_board, index, &scores, depth - 1, 1, &wg)
+		if myTurn == true {
+			go scoring_worker(new_board, index, &scores, depth - 1, -1, &wg)
+		} else {
+			go scoring_worker(new_board, index, &scores, depth - 1, 1, &wg)
+		}
 	}
 	wg.Wait()
+	//fmt.Println(scores)
 
 	// select move
 	min_score := return_min(scores)
