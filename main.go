@@ -235,9 +235,10 @@ func trim_moves(moves_untrimmed [][]int) [][]int {
 
 }
 
+// directly copies string structs for lines and board
+// otherwise new object copies by reference
 func deepCopy(board Board) Board {
 	new_board := board
-
 	new_board.Lines = make([][]string, len(board.Lines))
 	for i := range board.Lines {
 		new_board.Lines[i] = make([]string, len(board.Lines[i]))
@@ -248,10 +249,10 @@ func deepCopy(board Board) Board {
 		new_board.Squares[i] = make([]string, len(board.Squares[i]))
 		copy(new_board.Squares[i], board.Squares[i])
 	}
-
 	return new_board
 }
 
+// returns min integer value of array
 func return_min(scores []int) int {
 	min_score := 1000
 	for i := range scores {
@@ -262,6 +263,7 @@ func return_min(scores []int) int {
 	return min_score
 }
 
+// returns max integer value of array
 func return_max(scores []int) int {
 	max_score := -1000
 	for i := range scores {
@@ -270,6 +272,16 @@ func return_max(scores []int) int {
 		}
 	}
 	return max_score
+}
+
+// randomly select move with lowest expected score
+// server AI wants low score
+func return_random_best_move(legalMoves [][]int, scores []int, min_score int) []int {
+	index := rand.Intn(len(legalMoves))
+	for scores[index] != min_score {
+		index = rand.Intn(len(legalMoves))
+	}
+	return legalMoves[index]
 }
 
 /*
@@ -368,16 +380,10 @@ func makeMove(board Board) []int {
 	min_server_score := return_min(scores)
 	fmt.Println(min_server_score)
 
-	// select random move with lowest minimum value
-	index := rand.Intn(len(legalMoves))
-	for scores[index] != min_server_score {
-		index = rand.Intn(len(legalMoves))
-	}
-
-	result = legalMoves[index]
+	result = return_random_best_move(legalMoves, scores, min_server_score)
 	return result
 
-	panic("No valid moves should not be here")
+	//panic("No valid moves should not be here")
 }
 
 //This is a function which gets a move and plays it onto the board
