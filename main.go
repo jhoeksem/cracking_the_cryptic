@@ -284,38 +284,51 @@ func return_random_best_move(legalMoves [][]int, scores []int, min_score int) []
 	return legalMoves[index]
 }
 
+// creates array of size length and fills each index with base value 
+func init_scores(base_value int, length int) []int {
+	scores := make([]int, length)
+	for i := 0; i < length; i++ {
+		scores[i] = base_value
+	}
+	return scores
+}
 /*
-func score_move(board Board, move []int) int {
-
-	// base case
-	if 
+func score_move(board Board, move []int, depth int, player int) int {
 
 	// get legal moves and # legal moves
 	legalMoves := getLegalMoves(board)
 	legalMoves = trim_moves()
 	numLegalMoves := len(legalMoves)
 
+	// base cases
+	// 1. search depth is reached
+	// 2. there are no legal moves
+	if ( depth == 0 || numLegalMoves == 0 ){
+		return evaluation(&(board).Squares)
+	}
+
+	// recursive case
+	// search to another depth and minmax scores
 	myTurn := true
 	gameOver := ""
 	valid := true
+	scores := 
 
 	for i, j := range legalMoves {
-
+		
 	}
+
+	panic("Something went wrong in score_move()")
 }
 */
-
 // simple AI min max
 func makeMove(board Board) []int {
 
 	//depth := 1
 	result := make([]int, 2)
-	scores := make([]int, 25)
-	for i := 0; i < 25; i++ {
-		scores[i] = 1000
-	}
 	legalMoves := getLegalMoves(board)
 	legalMoves = trim_moves(legalMoves)
+	scores := init_scores(1000, len(legalMoves))
 
 	myTurn := true
 	gameOver := ""
@@ -342,10 +355,7 @@ func makeMove(board Board) []int {
 			////////////////////////////////////
 			// explore all possible responses
 			////////////////////////////////////
-			scoresAfterMove := make([]int, 25)
-			for i := 0; i < 25; i++ {
-				scoresAfterMove[i] = -1000
-			}
+			scoresAfterMove := init_scores(-1000, 1000)
 			playerLegalMoves := getLegalMoves(exploration_board)
 
 			for m, n := range playerLegalMoves {
